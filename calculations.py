@@ -30,12 +30,14 @@ def hitung_berat_badan_ideal(Tb):
 
 # Function to calculate basic calorie needs
 def hitung_AKEi_umur(Bi, jenis_kelamin, umur):
+    print(f"Calculating AKEi for Bi: {Bi}, gender: {jenis_kelamin}, age: {umur}")
     if 20 <= umur <= 29:
         if jenis_kelamin.lower() == "laki-laki":
             AKEi = (15.3 * Bi + 679) * 1.78
         elif jenis_kelamin.lower() == "perempuan":
             AKEi = (14.7 * Bi + 496) * 1.64
         else:
+            print("Invalid gender")
             return "Jenis kelamin tidak valid"
     elif 30 <= umur <= 59:
         if jenis_kelamin.lower() == "laki-laki":
@@ -43,6 +45,7 @@ def hitung_AKEi_umur(Bi, jenis_kelamin, umur):
         elif jenis_kelamin.lower() == "perempuan":
             AKEi = (8.7 * Bi + 829) * 1.64
         else:
+            print("Invalid gender")
             return "Jenis kelamin tidak valid"
     elif umur >= 60:
         if jenis_kelamin.lower() == "laki-laki":
@@ -50,11 +53,15 @@ def hitung_AKEi_umur(Bi, jenis_kelamin, umur):
         elif jenis_kelamin.lower() == "perempuan":
             AKEi = (13.5 * Bi + 596) * 1.64
         else:
+            print("Invalid gender")
             return "Jenis kelamin tidak valid"
     else:
+        print("Invalid age")
         return "Umur tidak valid"
 
+    print(f"Calculated AKEi: {AKEi}")
     return AKEi
+
 
 # Function to calculate the nutritional needs factor based on mealtime
 def hitung_kebutuhan_faktor(meal_id):
