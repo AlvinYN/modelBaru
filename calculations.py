@@ -4,7 +4,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.neighbors import NearestNeighbors
 
 # Load dataset
-dataset_path = "C:\\Users\\aallv\\Documents\\Project TA\\Model-Model-Model\\CombinedResep.csv"
+dataset_path = "CombinedResep.csv"
 dataset = pd.read_csv(dataset_path)
 
 # Define allergy categories
