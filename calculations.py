@@ -4,7 +4,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.neighbors import NearestNeighbors
 
 # Load dataset
-dataset_path = "C:\\Users\\aallv\\Documents\\Project TA\\Model-Model-Model\\CombinedResep.csv"
+dataset_path = "CombinedResep.csv"
 dataset = pd.read_csv(dataset_path)
 
 # Define allergy categories
@@ -188,8 +188,6 @@ def rekomendasi_makanan(dataset_mealtime, nutrisi_dibutuhkan, user_allergies):
     # Melatih model k-NN pada subset dataset yang sudah difilter
     model_mealtime = NearestNeighbors(n_neighbors=7, algorithm='auto')
     model_mealtime.fit(X_mealtime_scaled)
-    
-    # ini berubah
     
     # Membuat DataFrame untuk input nutrisi yang dibutuhkan dengan nama kolom yang sesuai
     nutrisi_dibutuhkan_df = pd.DataFrame(nutrisi_dibutuhkan, columns=nutrisi_columns)
