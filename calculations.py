@@ -3,18 +3,18 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.neighbors import NearestNeighbors
 
-# Load dataset
+# Memuat dataset
 dataset_path = "CombinedResep.csv"
 dataset = pd.read_csv(dataset_path)
 
-# Define allergy categories
+# Mendefinisikan alergi apa saja yang terkandung di masing-masing alergi kacang, telur, dan seafood
 allergy_categories = {
     "Nuts": ["Kacang tanah", "Peanuts", "Kacang almond", "Almonds", "Kacang mete", "Cashews", "Kacang pistachio", "Pistachios", "Kacang kenari", "Walnuts", "Kacang pecan", "Pecans", "Kacang pinus", "Pine nuts", "Kacang brazil", "Brazil nuts", "Kacang macadamia", "Macadamia nuts", "Kacang hazelnut", "Hazelnuts"],
     "Eggs": ["Telur ayam", "Chicken eggs", "Telur bebek", "Duck eggs", "Telur angsa", "Goose eggs", "Telur puyuh", "Quail eggs", "Telur orak-arik", "Scrambled eggs", "Telur rebus", "Boiled eggs", "Telor", "Fried eggs", "Telur ceplok", "Omelette", "Telur mata sapi", "Omelet", "Telur"],
     "Seafood": ["Salmon", "Tuna", "Cod", "Trout", "Mackerel", "Sarden", "Sardine", "Anchovy", "Haddock", "Herring", "Halibut", "Udang", "Shrimp", "Lobster", "Kepiting", "Crab", "Kerang", "Clams", "Tiram", "Oysters", "Cumi-cumi", "Squid", "Gurita", "Octopus", "Kerang Simping", "Scallops", "Kerang Hijau", "Mussels", "Kerang Abalon", "Abalone"]
 }
 
-# Function to check for allergies in a recipe
+# Fungsi untuk check alergi yang ada di dalam bahan setiap resep
 def check_allergies(ingredients, user_allergies):
     for allergy_category in user_allergies:
         allergy_list = allergy_categories.get(allergy_category, [])
@@ -23,12 +23,12 @@ def check_allergies(ingredients, user_allergies):
                 return True
     return False
 
-# Function to calculate ideal body weight
+# Fungsi untuk menghitung Berat Bada Ideal (Bi) berdasarkan tinggi badan
 def hitung_berat_badan_ideal(Tb):
     Bi = (Tb - 100) - (0.1 * (Tb - 100))
     return Bi
 
-# Function to calculate basic calorie needs
+# Fungsi untuk menghitung Kebutuhan Kalori Harian - AKEi berdasarkan umur dan jenis kelamin
 def hitung_AKEi_umur(Bi, jenis_kelamin, umur):
     if 20 <= umur <= 29:
         if jenis_kelamin.lower() == "laki-laki":
@@ -56,18 +56,21 @@ def hitung_AKEi_umur(Bi, jenis_kelamin, umur):
 
     return AKEi
 
-# Function to calculate the nutritional needs factor based on mealtime
+# Fungsi untuk mendefinisikan faktor makan 
+# 1 untuk sarapan sebesar 25%
+# 2 untuk makan siang sebesar 40%
+# 3 untuk makan malam sebesar 35%
 def hitung_kebutuhan_faktor(meal_id):
     faktor_map = {1: 0.25, 2: 0.40, 3: 0.35}
     return faktor_map[meal_id]
 
-# Function to calculate nutritional needs based on mealtime, diseases, and basic calorie intake
+# Fungsi untuk menghitung kebutuhan nutrisi harian berrdasarkan AKEi, faktor waktu makan, dan penyakit yang diderita
 def hitung_kebutuhan_nutrisi(meal_id, AKEi, penyakit_input_list, jenis_kelamin):
     faktor = hitung_kebutuhan_faktor(meal_id)
     penyakit_input = set(penyakit_input_list)
     kebutuhan_kalori = protein = lemak = lemak_jenuh = lemak_tidak_jenuh_ganda = lemak_tidak_jenuh_tunggal = karbohidrat = kolesterol = gula = serat = garam = kalium = 0
  
-    if {'Diabetes', 'Hipertensi', 'Kolesterol'}.issubset(penyakit_input):
+    if {'Diabetes', 'Hipertensi', 'Kolesterol'}.issubset(penyakit_input): # Kondisi untuk ketiga penyakit disatukan
         kebutuhan_kalori = faktor * AKEi
         protein = 0.8 * kebutuhan_kalori / 4
         lemak = 0.2 * kebutuhan_kalori / 9
@@ -82,7 +85,7 @@ def hitung_kebutuhan_nutrisi(meal_id, AKEi, penyakit_input_list, jenis_kelamin):
         kalium = faktor * 3500
         return np.array([[kebutuhan_kalori, protein, lemak, lemak_jenuh, lemak_tidak_jenuh_ganda, lemak_tidak_jenuh_tunggal, karbohidrat, kolesterol, gula, serat, garam, kalium]])
     
-    if {'Diabetes', 'Hipertensi'}.issubset(penyakit_input):
+    if {'Diabetes', 'Hipertensi'}.issubset(penyakit_input): # Kondisi untuk penyakit Diabetes dan Hipertensi
         kebutuhan_kalori = faktor * AKEi
         protein = 0.8 * kebutuhan_kalori / 4
         lemak = 0.225 * kebutuhan_kalori / 9
@@ -97,7 +100,7 @@ def hitung_kebutuhan_nutrisi(meal_id, AKEi, penyakit_input_list, jenis_kelamin):
         kalium = faktor * 3500
         return np.array([[kebutuhan_kalori, protein, lemak, lemak_jenuh, lemak_tidak_jenuh_ganda, lemak_tidak_jenuh_tunggal, karbohidrat, kolesterol, gula, serat, garam, kalium]])
         
-    if {'Diabetes', 'Kolesterol'}.issubset(penyakit_input):
+    if {'Diabetes', 'Kolesterol'}.issubset(penyakit_input): # Kondisi untuk penyakit Diabetes dan Kolesterol
         kebutuhan_kalori = faktor * AKEi
         protein = 0.8 * kebutuhan_kalori / 4
         lemak = 0.2 * kebutuhan_kalori / 9
@@ -112,7 +115,7 @@ def hitung_kebutuhan_nutrisi(meal_id, AKEi, penyakit_input_list, jenis_kelamin):
         kalium = faktor * 3500
         return np.array([[kebutuhan_kalori, protein, lemak, lemak_jenuh, lemak_tidak_jenuh_ganda, lemak_tidak_jenuh_tunggal, karbohidrat, kolesterol, gula, serat, garam, kalium]])
         
-    if {'Hipertensi', 'Kolesterol'}.issubset(penyakit_input):
+    if {'Hipertensi', 'Kolesterol'}.issubset(penyakit_input): #Kondisi untuk penyakit Hipertensi dan Kolesterol
         kebutuhan_kalori = faktor * AKEi
         protein = 0.8 * kebutuhan_kalori / 4
         lemak = 0.2 * kebutuhan_kalori / 9
@@ -127,7 +130,7 @@ def hitung_kebutuhan_nutrisi(meal_id, AKEi, penyakit_input_list, jenis_kelamin):
         kalium = faktor * 3500
         return np.array([[kebutuhan_kalori, protein, lemak, lemak_jenuh, lemak_tidak_jenuh_ganda, lemak_tidak_jenuh_tunggal, karbohidrat, kolesterol, gula, serat, garam, kalium]])
     
-    if 'Diabetes' in penyakit_input:
+    if 'Diabetes' in penyakit_input: # Kondisi untuk penyakit Diabetes
         kebutuhan_kalori = faktor * AKEi
         protein = 0.125 * kebutuhan_kalori / 4
         lemak = 0.225 * kebutuhan_kalori / 9
@@ -140,7 +143,7 @@ def hitung_kebutuhan_nutrisi(meal_id, AKEi, penyakit_input_list, jenis_kelamin):
         serat = faktor * 25
         garam = faktor * 3000
         kalium = faktor * 3500
-    elif 'Hipertensi' in penyakit_input:
+    elif 'Hipertensi' in penyakit_input: # Kondisi untuk penyakit Hipertensi
         kebutuhan_kalori = faktor * AKEi
         protein = 0.8 * kebutuhan_kalori / 4
         lemak = 0.25 * kebutuhan_kalori / 9
@@ -153,7 +156,7 @@ def hitung_kebutuhan_nutrisi(meal_id, AKEi, penyakit_input_list, jenis_kelamin):
         serat = faktor * 12.5
         garam = faktor * 2400
         kalium = faktor * 3500
-    elif 'Kolesterol' in penyakit_input:
+    elif 'Kolesterol' in penyakit_input: # Kondisi untuk penyakit Kolesterol
         kebutuhan_kalori = faktor * AKEi
         protein = 0.8 * kebutuhan_kalori / 4
         karbohidrat = 0.65 * kebutuhan_kalori / 4
@@ -174,7 +177,7 @@ def hitung_kebutuhan_nutrisi(meal_id, AKEi, penyakit_input_list, jenis_kelamin):
     else:
         return ValueError("Penyakit tidak valid")
     
-    return np.array([[kebutuhan_kalori, protein, lemak, lemak_jenuh, lemak_tidak_jenuh_ganda, lemak_tidak_jenuh_tunggal, karbohidrat, kolesterol, gula, serat, garam, kalium]])
+    return np.array([[kebutuhan_kalori, protein, lemak, lemak_jenuh, lemak_tidak_jenuh_ganda, lemak_tidak_jenuh_tunggal, karbohidrat, kolesterol, gula, serat, garam, kalium]]) # Nilai nutrisi pengguna disimpan dalam array
 
 def rekomendasi_makanan(dataset_mealtime, nutrisi_dibutuhkan, user_allergies):
     # Mengambil fitur nutrisi dari subset dataset
@@ -206,4 +209,4 @@ def rekomendasi_makanan(dataset_mealtime, nutrisi_dibutuhkan, user_allergies):
     print(f"Rekomendasi setelah filter alergi: {len(rekomendasi_filtered)} resep")
     print(rekomendasi_filtered[['Recipe ID', 'Nama Resep', 'Meal ID', 'Ingredients']])  # Menampilkan detail resep yang tersisa setelah filter alergi
     
-    return rekomendasi_filtered
+    return rekomendasi_filtered # Mengembalikan output resep
