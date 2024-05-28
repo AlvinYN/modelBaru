@@ -4,7 +4,7 @@ from calculations import (
     hitung_berat_badan_ideal,
     hitung_AKEi_umur,
     hitung_kebutuhan_nutrisi,
-    rekomendasi_makanan,
+    rekomendasi_makanan_knn_all,
     dataset
 )
 
@@ -43,10 +43,12 @@ def api_rekomendasi():
     # Menghitung dan menampilkan rekomendasi makanan untuk setiap waktu makan
     for meal_id, meal_name, dataset_mealtime in [(1, "sarapan", dataset_sarapan), (2, "makan siang", dataset_makan_siang), (3, "makan malam", dataset_makan_malam)]:
         nutrisi_dibutuhkan = hitung_kebutuhan_nutrisi(meal_id, AKEi, penyakit_input, jenis_kelamin)
-        rekomendasi = rekomendasi_makanan(dataset_mealtime, nutrisi_dibutuhkan, user_allergies)
+        print(f"Nutrisi yang dibutuhkan untuk {meal_name}: {nutrisi_dibutuhkan}")
+        rekomendasi = rekomendasi_makanan_knn_all(dataset_mealtime, nutrisi_dibutuhkan, user_allergies)
         
         # Tambahkan Recipe ID ke dalam response
         response_data[meal_name] = [{"Recipe ID": int(recipe_id)} for recipe_id in rekomendasi['Recipe ID']]
+        print(f"Rekomendasi untuk {meal_name}: {response_data[meal_name]}")
 
     return jsonify(response_data)
 
