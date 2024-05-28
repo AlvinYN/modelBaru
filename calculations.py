@@ -186,31 +186,40 @@ def hitung_kebutuhan_nutrisi(meal_id, AKEi, penyakit_input_list, jenis_kelamin):
 def rekomendasi_makanan(dataset_mealtime, nutrisi_dibutuhkan, user_allergies):
     # Mengambil fitur nutrisi dari subset dataset
     nutrisi_columns = ['Energi (kkal)', 'Protein (g)', 'Lemak (g)', 'Lemak Jenuh (g)', 'Lemak tak Jenuh Ganda (g)', 'Lemak tak Jenuh Tunggal (g)', 'Karbohidrat (g)', 'Kolesterol (mg)', 'Gula (g)', 'Serat (g)', 'Sodium (mg)', 'Kalium (mg)']
+    
+    if not all(col in dataset_mealtime.columns for col in nutrisi_columns):
+        raise ValueError(f"Dataset tidak memiliki kolom nutrisi yang diperlukan: {nutrisi_columns}")
+
     X_mealtime = dataset_mealtime[nutrisi_columns]
     
     # Menskalakan fitur
     scaler = MinMaxScaler()
     X_mealtime_scaled = scaler.fit_transform(X_mealtime)
     
-    # Melatih model k-NN pada subset dataset yang sudah difilter
-    model_mealtime = NearestNeighbors(n_neighbors=7, algorithm='auto')
-    model_mealtime.fit(X_mealtime_scaled)
-    
     # Membuat DataFrame untuk input nutrisi yang dibutuhkan dengan nama kolom yang sesuai
     nutrisi_dibutuhkan_df = pd.DataFrame(nutrisi_dibutuhkan, columns=nutrisi_columns)
     
     # Menskalakan nutrisi yang dibutuhkan
     nutrisi_dibutuhkan_scaled = scaler.transform(nutrisi_dibutuhkan_df)
-    
-    # Mendapatkan rekomendasi makanan
-    distances, indices = model_mealtime.kneighbors(nutrisi_dibutuhkan_scaled)
+
+    # Tentukan n_neighbors secara dinamis berdasarkan ukuran dataset
+    n_neighbors = min(100, len(dataset_mealtime))
+
+    # Menggunakan k-NN untuk mencari n_neighbors terdekat
+    knn = NearestNeighbors(n_neighbors=n_neighbors)
+    knn.fit(X_mealtime_scaled)
+    distances, indices = knn.kneighbors(nutrisi_dibutuhkan_scaled)
+
     rekomendasi = dataset_mealtime.iloc[indices[0]]
-    print(f"Rekomendasi awal sebelum filtering: {len(rekomendasi)} resep")
-    print(rekomendasi[['Recipe ID', 'Nama Resep', 'Meal ID', 'Ingredients']])  # Menampilkan detail resep
     
-    # Memfilter hasil berdasarkan alergi
+    # Debugging untuk melihat hasil k-NN sebelum filter
+    print(f"Rekomendasi awal dari k-NN: {len(rekomendasi)} resep")
+    print(rekomendasi[['Recipe ID', 'Nama Resep', 'Meal ID', 'Ingredients']])
+    
     rekomendasi_filtered = rekomendasi[~rekomendasi['Ingredients'].apply(check_allergies, user_allergies=user_allergies)]
+    
+    # Debugging untuk melihat hasil filter alergi
     print(f"Rekomendasi setelah filter alergi: {len(rekomendasi_filtered)} resep")
-    print(rekomendasi_filtered[['Recipe ID', 'Nama Resep', 'Meal ID', 'Ingredients']])  # Menampilkan detail resep yang tersisa setelah filter alergi
+    print(rekomendasi_filtered[['Recipe ID', 'Nama Resep', 'Meal ID', 'Ingredients']])
     
     return rekomendasi_filtered
